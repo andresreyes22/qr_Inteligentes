@@ -6,12 +6,14 @@ from movimiento_robot.mover_robot import mover_robot
 from qLearning.Q_learning import aplicarQlearning
 from sarsa.Sarsa import aplicarSarsa
 from generar_graficas.grafico_entrenamiento import graficar_entrenamiento
+import requests
 # URL de DroidCam
-url = "http://192.168.178.22:4747/video"
+url = "http://192.168.1.8:4747/video"
+server_url="http://192.168.1.4:5000"
 
 # Parámetros de la cuadrícula
-rows = 4 # Número de filas
-cols = 4  # Número de columnas
+rows = 5 # Número de filas
+cols = 5  # Número de columnas
 thickness = 1  # Grosor de las líneas
 count = 0
 
@@ -45,29 +47,25 @@ else:
     cv2.createTrackbar('Canny Th1', 'Ajustes', canny_threshold1, 255, on_trackbar_change)
     cv2.createTrackbar('Canny Th2', 'Ajustes', canny_threshold2, 255, on_trackbar_change)
     cv2.createTrackbar('Dilatacion', 'Ajustes', 2, 15, on_trackbar_change)
-    maze = maze_generate(rows, cols)
+    # Llama al endpoint para obtener el laberinto
+ # Llama al endpoint para obtener el laberinto
+    #try:
+    response_maze = requests.get(f"{server_url}/maze", timeout=25)  # Llamada con timeout
+    response_maze.raise_for_status()  # Lanza una excepción si hay un código de error HTTP
+    maze = response_maze.json()  # Asume que el endpoint devuelve un JSON representando el maze
+    print("Laberinto recibido del servidor:", maze)
+    # except requests.exceptions.RequestException as e:
+    #  print(f"Error al obtener el laberinto desde el servidor: {e}")
+    # Usa un respaldo local si el servidor falla 
+    #maze = maze_generate(rows, cols)
+    
+    #maze = maze_generate(rows, cols)
     #maze = [[0,0,0],
     #        [0,1,0], 
     #        [0,0,0]]
 
-    """tablaQ, retorno_qLearning = aplicarQlearning(maze)
-    tablaQ2, retorno_sarsa = aplicarSarsa(maze)
-    print('Tabla Q con Q_learning despues de entrenar')
-    for c, v in tablaQ.items():
-        print(c, v)
-
-    print('Tabla Q con Sarsa despues de entrenar')
-    for c, v in tablaQ2.items():
-        print(c, v)
-
-    retorno_qL = [retorno_qLearning]
-    titulo_qL = ['alpha=0.4']
-    graficar_entrenamiento(retorno_qL, titulo_qL, 'q_learning.png')
-
-    retorno_s = [retorno_sarsa]
-    titulo_s = ['alpha=0.4']
-    graficar_entrenamiento(retorno_s, titulo_s, 'sarsa.png')"""
-    tablaQ, retorno_qLearning = aplicarQlearning(maze)
+    tablaQ, retorno_qLearning = aplicarSarsa(maze)
+    #aplicarQlearning(maze)
     print("dsasddasd____________",tablaQ)
     
     qr_detector = cv2.QRCodeDetector()
